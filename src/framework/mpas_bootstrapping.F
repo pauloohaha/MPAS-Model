@@ -580,10 +580,6 @@ module mpas_bootstrapping
       call mpas_block_creator_finalize_block_phase2(domain % streamManager, domain % blocklist, readableDimensions)
       call mpas_link_fields(domain)
 
-      !DEBUG PIAO
-      call mpas_log_write('****BLOCK PHASE2 FINISHED ******')
-      call mpas_log_write(' ')
-
       call mpas_pool_destroy_pool(readableDimensions)
 
    end subroutine mpas_bootstrap_framework_phase2 !}}}
