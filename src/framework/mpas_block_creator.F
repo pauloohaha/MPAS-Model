@@ -1266,6 +1266,10 @@ module mpas_block_creator
           call mpas_log_write('Derived dimension setup failed for core ' // trim(block_ptr % domain % core % coreName), MPAS_LOG_CRIT)
        end if
 
+      !DEBUG PIAO
+       call mpas_log_write('***FINISH dimension setup ***')
+       call mpas_log_write(' ')
+
        call mpas_block_creator_allocate_pool_fields(block_ptr % structs, block_ptr % dimensions)
 
        err_level = mpas_pool_get_error_level()
