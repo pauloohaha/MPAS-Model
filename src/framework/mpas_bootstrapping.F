@@ -578,6 +578,10 @@ module mpas_bootstrapping
 
       ! Allocate blocks, and copy indexTo arrays into blocks
       call mpas_block_creator_finalize_block_phase2(domain % streamManager, domain % blocklist, readableDimensions)
+      !DEBUG PIAO
+      call mpas_log_write('****BLOCK PHASE2 FINISHED ******')
+      call mpas_log_write(' ')
+
       call mpas_link_fields(domain)
 
       call mpas_pool_destroy_pool(readableDimensions)
