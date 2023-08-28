@@ -1298,6 +1298,10 @@ module mpas_block_creator
 
        indexField % array(:) = indexFieldBlk % array(:)
 
+      !DEBUG PIAO
+       call mpas_log_write('****dimensions FINISHED 1******')
+       call mpas_log_write(' ')
+
        call mpas_pool_remove_field(block_ptr % allFields, 'indexToCellID_blk')
        call mpas_deallocate_field(indexFieldBlk)
 
@@ -1325,6 +1329,10 @@ module mpas_block_creator
 
        indexField % array(:) = indexFieldBlk % array(:)
 
+      !DEBUG PIAO
+       call mpas_log_write('****dimensions FINISHED 2******')
+       call mpas_log_write(' ')
+
        call mpas_pool_remove_field(block_ptr % allFields, 'indexToEdgeID_blk')
        call mpas_deallocate_field(indexFieldBlk)
 
@@ -1351,6 +1359,10 @@ module mpas_block_creator
        call mpas_pool_add_field(block_ptr % allFields, 'nVerticesOwnedIndices', ownedIndices)
 
        indexField % array(:) = indexFieldBlk % array(:)
+
+       !DEBUG PIAO
+       call mpas_log_write('****dimensions FINISHED 3******')
+       call mpas_log_write(' ')
 
        call mpas_pool_remove_field(block_ptr % allFields, 'indexToVertexID_blk')
        call mpas_deallocate_field(indexFieldBlk)
