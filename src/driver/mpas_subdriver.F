@@ -324,10 +324,7 @@ module mpas_subdriver
       ! Finalize the setup of blocks and fields
       !
       call mpas_bootstrap_framework_phase2(domain_ptr)
-      
-      !DEBUG PIAO
-      call mpas_log_write('****FRAMEWORK PHASE2 FINISHED ******')
-      call mpas_log_write(' ')
+
       !
       ! Initialize core
       !
