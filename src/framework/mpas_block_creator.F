@@ -1272,16 +1272,30 @@ module mpas_block_creator
 
        call mpas_block_creator_allocate_pool_fields(block_ptr % structs, block_ptr % dimensions)
 
+       !DEBUG PIAO
+       call mpas_log_write('****dimensions FINISHED A******')
+       call mpas_log_write(' ')
+
        err_level = mpas_pool_get_error_level()
        call mpas_pool_set_error_level(MPAS_POOL_SILENT)
        call mpas_pool_get_field(block_ptr % allFields, 'indexToCellID', indexField)
        call mpas_pool_get_field(block_ptr % allFields, 'indexToCellID_blk', indexFieldBlk)
        call mpas_pool_get_dimension(block_ptr % dimensions, 'nCellsSolve', dim0d)
+
+       !DEBUG PIAO
+       call mpas_log_write('****dimensions FINISHED B******')
+       call mpas_log_write(' ')
+
        allocate(ownedIndices)
        ownedIndices % fieldName = 'nCellsOwnedIndices'
        ownedIndices % dimNames(1) = 'nCells'
        ownedIndices % dimSizes(1) = dim0d
        allocate(ownedIndices % array(dim0d))
+
+       !DEBUG PIAO
+       call mpas_log_write('****dimensions FINISHED C******')
+       call mpas_log_write(' ')
+
        ownedIndices % isDecomposed = .false.
        ownedIndices % hasTimeDimension = .false.
        ownedIndices % isActive = .true.
@@ -1291,6 +1305,11 @@ module mpas_block_creator
        allocate(ownedIndices % attLists(1) % attList)
        ownedIndices % attLists(1) % attList % attName = ''
        ownedIndices % attLists(1) % attList % attType = -1
+
+       !DEBUG PIAO
+       call mpas_log_write('****dimensions FINISHED D******')
+       call mpas_log_write(' ')
+
        nullify(ownedIndices % attLists(1) % attList % next)
        nullify(ownedIndices % attLists(1) % attList % attValueIntA)
        nullify(ownedIndices % attLists(1) % attList % attValueRealA)
