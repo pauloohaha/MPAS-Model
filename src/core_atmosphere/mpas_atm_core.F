@@ -12,10 +12,6 @@ module atm_core
    use mpas_dmpar
    use mpas_log, only : mpas_log_write, mpas_log_info
 
-#ifdef _PAPI
-   include 'f90papi.h'
-#endif
-
    type (MPAS_Clock_type), pointer :: clock
 
 
@@ -52,11 +48,6 @@ module atm_core
       type (MPAS_Time_Type) :: startTime
 
       integer, pointer :: nVertLevels, maxEdges, maxEdges2, num_scalars
-
-#ifdef _PAPI
-      integer :: retval
-      call PAPIf_library_init(retval)
-#endif
 
       ierr = 0
 
