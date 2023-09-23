@@ -142,7 +142,7 @@
 !local variables:
 #ifdef _PAPI
  integer :: eventset, retval
- integer :: count
+ integer :: count(2)
 #endif
  type(block_type),pointer:: block
 
@@ -171,6 +171,12 @@
  endif
 
  call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
+ if( retval .ne. PAPI_OK ) then
+   print *,'Error at PAPIf_add_event'
+   stop
+ endif
+
+ call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
  if( retval .ne. PAPI_OK ) then
    print *,'Error at PAPIf_add_event'
    stop
@@ -376,14 +382,16 @@
  call mpas_timer_stop('physics driver')
 
 #ifdef _PAPI
- count = 2
+ count(1) = 2
+ count(2) = 3
  call PAPIf_stop(eventset, count, retval)
  if( retval .ne. PAPI_OK ) then
    print *,'Error at PAPIf_stop'
    stop
  endif
 
- call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count/))
+ call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count(1)/))
+ call mpas_log_write(' ****** PAPI TOT INS $i', intArgs=(/count(2)/))
 #endif
 
 !call mpas_log_write('--- enter subroutine mpas_atmphys_driver:')
