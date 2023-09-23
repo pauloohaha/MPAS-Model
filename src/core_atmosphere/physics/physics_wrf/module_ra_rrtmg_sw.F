@@ -9857,6 +9857,7 @@ use parrrsw, only : nbndsw, ngptsw, naerec
 use rrtmg_sw_init, only: rrtmg_sw_ini
 use rrtmg_sw_rad, only: rrtmg_sw
 use mcica_subcol_gen_sw, only: mcica_subcol_sw
+use mpas_log, only: mpas_log_write
 
 use module_ra_rrtmg_lw, only : inirad, o3data, relcalc, reicalc, retab
 !                               mcica_random_numbers, randomNumberSequence, &
@@ -9884,7 +9885,9 @@ CONTAINS
  implicit none
 
 !=================================================================================================================
-
+#ifdef _PAPI
+ include 'f90papi.h'
+#endif
 !--- input arguments:
  integer,intent(in):: ids,ide, jds,jde, kds,kde, &
                       ims,ime, jms,jme, kms,kme, &
@@ -9920,6 +9923,10 @@ CONTAINS
      swupflx,swupflxc,swdnflx,swdnflxc
 
 !local variables and arrays:
+#ifdef _PAPI
+ integer :: eventset, retval
+ integer :: count(2)
+#endif
  logical:: dorrsw
 
  integer:: na,nb,ncol,nlay,icld,inflgsw,iceflgsw,liqflgsw
@@ -10040,7 +10047,39 @@ CONTAINS
              pw1d(k) = p8w(i,k,j) / 100.
              tw1d(k) = t8w(i,k,j)
           enddo
+#ifdef _PAPI
+          retval = PAPI_VER_CURRENT
+          call PAPIf_library_init(retval)
+          if( retval .ne. PAPI_VER_CURRENT ) then
+            print *,'Error at PAPIf_library_init'
+            stop
+          endif
+         
+          eventset = PAPI_NULL
+          call PAPIf_create_eventset(eventset, retval)
+          if( retval .ne. PAPI_OK ) then
+            print *,'Error at PAPIf_create_eventset'
+            stop
+          endif
+         
+          call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
+          if( retval .ne. PAPI_OK ) then
+            print *,'Error at PAPIf_add_event'
+            stop
+          endif
 
+          call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
+          if( retval .ne. PAPI_OK ) then
+            print *,'Error at PAPIf_add_event'
+            stop
+          endif
+         
+          call PAPIf_start(eventset, retval)
+          if( retval .ne. PAPI_OK ) then
+            print *,'Error at PAPIf_start'
+            stop
+          endif
+#endif
           do k = kts, kte
              p1d(k)      = p3d(i,k,j) / 100.
              dz1d(k)     = dz8w(i,k,j)
@@ -10055,6 +10094,19 @@ CONTAINS
              cldfra1d(k) = 0.
              if(present(o33d)) o31d(k) = o33d(i,k,j)
           enddo
+
+#ifdef _PAPI
+          count(1) = 2
+          count(2) = 3
+          call PAPIf_stop(eventset, count, retval)
+          if( retval .ne. PAPI_OK ) then
+            print *,'Error at PAPIf_stop'
+            stop
+          endif
+         
+          call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count(1)/))
+          call mpas_log_write(' ****** PAPI TOT INS $i', intArgs=(/count(2)/))
+#endif
 
           !--- initialize the local arrays containing the different cloud water and ice condenstates:
           if(icloud .gt. 0) then
