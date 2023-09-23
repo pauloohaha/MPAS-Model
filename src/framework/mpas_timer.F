@@ -218,12 +218,9 @@
                 current_timer % calls = current_timer % calls + 1
              end if
              current_timer % running(threadNum + 1) = .true.
-#ifdef _PAPI
-             call PAPIF_get_real_usec(usecs, check_flag)
-             current_timer % start_time(threadNum + 1) = usecs/1.0e6
-#else
+
              call mpas_dmpar_get_time(current_timer % start_time(threadNum + 1))
-#endif
+
 #endif
 
         end subroutine mpas_timer_start!}}}
@@ -284,12 +281,9 @@
           ! Set stop time
           ! TODO: Compute timer statistics...
           timer_root % current_timer % running(threadNum + 1) = .false.
-#ifdef _PAPI
-          call PAPIF_get_real_usec(usecs, check_flag)
-          current_timer % end_time(threadNum + 1) = usecs/1.0e6
-#else
+
           call mpas_dmpar_get_time(timer_root % current_timer % end_time(threadNum + 1))
-#endif
+
           temp_time = timer_root % current_timer % end_time(threadNum + 1) &
                     - timer_root % current_timer % start_time(threadNum + 1)
           timer_root % current_timer % total_time(threadNum + 1) = timer_root % current_timer % total_time(threadNum + 1) &
