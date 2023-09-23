@@ -143,6 +143,7 @@
 #ifdef _PAPI
  integer :: eventset, retval
  integer*8 :: count(2)
+ integer :: countTemp
 #endif
  type(block_type),pointer:: block
 
@@ -389,9 +390,10 @@
    print *,'Error at PAPIf_stop'
    stop
  endif
-
- print *,'******TOT CYC', count(1)
- print *,'******TOT INS', count(2)
+ countTemp = count(1)
+ call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/countTemp/))
+ countTemp = count(2)
+ call mpas_log_write(' ****** PAPI TOT INS $i', intArgs=(/countTemp/))
 #endif
 
 !call mpas_log_write('--- enter subroutine mpas_atmphys_driver:')
