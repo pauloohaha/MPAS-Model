@@ -676,9 +676,7 @@
  subroutine driver_radiation_sw(itimestep,configs,mesh,state,time_lev,diag_physics,atm_input, &
                                 sfc_input,tend_physics,xtime_s,its,ite)
 !=================================================================================================================
-#ifdef _PAPI
- include 'f90papi.h'
-#endif
+
 !input arguments:
  integer,intent(in):: itimestep
  type(mpas_pool_type),intent(in):: configs
@@ -702,10 +700,6 @@
  character(len=StrKIND),pointer:: radt_sw_scheme
 
 !local variables:
-#ifdef _PAPI
- integer :: eventset, retval
- integer :: count
-#endif
  integer:: o3input
  real(kind=RKIND):: radt,xtime_m
 
@@ -746,34 +740,6 @@
        o3input = 0
        if(config_o3climatology) o3input = 2
 
-#ifdef _PAPI
-       retval = PAPI_VER_CURRENT
-       call PAPIf_library_init(retval)
-       if( retval .ne. PAPI_OK ) then
-         print *,'Error at PAPIf_library_init'
-         stop
-       endif
-
-       eventset = PAPI_NULL
-       call PAPIf_create_eventset(eventset, retval)
-       if( retval .ne. PAPI_OK ) then
-         print *,'Error at PAPIf_create_eventset'
-         stop
-       endif
-
-       call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
-       if( retval .ne. PAPI_OK ) then
-         print *,'Error at PAPIf_add_event'
-         stop
-       endif
-
-       call PAPIf_start(eventset, retval)
-       if( retval .ne. PAPI_OK ) then
-         print *,'Error at PAPIf_start'
-         stop
-       endif
-#endif
-
        call mpas_timer_start('RRTMG_sw')
        call rrtmg_swrad( &
               p3d        = pres_hyd_p   , p8w        = pres2_hyd_p   , pi3d     = pi_p     , &
@@ -799,17 +765,6 @@
               its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte          &
                        )
        call mpas_timer_stop('RRTMG_sw')
-
-#ifdef _PAPI
-             count = 2
-             call PAPIf_stop(eventset, count, retval)
-             if( retval .ne. PAPI_OK ) then
-               print *,'Error at PAPIf_stop'
-               stop
-             endif
-
-             call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count/))
-#endif
 
     case ("cam_sw")
        call mpas_timer_start('CAMRAD_sw')
