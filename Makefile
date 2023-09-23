@@ -136,29 +136,30 @@ pgi-llnl:
 	"CPPFLAGS = $(MODEL_FORMULATION) -D_MPI" )
 
 ifort:
-	( $(MAKE) all \
-	"FC_PARALLEL = mpif90" \
-	"CC_PARALLEL = mpicc" \
-	"CXX_PARALLEL = mpicxx" \
-	"FC_SERIAL = ifort" \
-	"CC_SERIAL = icc" \
-	"CXX_SERIAL = icpc" \
-	"FFLAGS_PROMOTION = -real-size 64" \
-	"FFLAGS_OPT = -O3 -convert big_endian -free -align array64byte" \
-	"CFLAGS_OPT = -O3" \
-	"CXXFLAGS_OPT = -O3" \
-	"LDFLAGS_OPT = -O3" \
-	"FFLAGS_DEBUG = -g -convert big_endian -free -CU -CB -check all -fpe0 -traceback" \
-	"CFLAGS_DEBUG = -g -traceback" \
-	"CXXFLAGS_DEBUG = -g -traceback" \
-	"LDFLAGS_DEBUG = -g -fpe0 -traceback" \
-	"FFLAGS_OMP = -qopenmp" \
-	"CFLAGS_OMP = -qopenmp" \
-	"CORE = $(CORE)" \
-	"DEBUG = $(DEBUG)" \
-	"USE_PAPI = $(USE_PAPI)" \
-	"OPENMP = $(OPENMP)" \
-	"CPPFLAGS = $(MODEL_FORMULATION) -D_MPI" )
+        ( $(MAKE) all \
+        "FC_PARALLEL = mpif90" \
+        "CC_PARALLEL = mpicc" \
+        "CXX_PARALLEL = mpicxx" \
+        "FC_SERIAL = ifort" \
+        "CC_SERIAL = icc" \
+        "CXX_SERIAL = icpc" \
+        "FFLAGS_PROMOTION = -real-size 64" \
+        "FFLAGS_OPT = -O3 -march=cascadelake -convert big_endian -free -align array64byte" \
+        "CFLAGS_OPT = -O3 -march=cascadelake " \
+        "CXXFLAGS_OPT = -O3 -march=cascadelake" \
+        "LDFLAGS_OPT = -O3 -march=cascadelake" \
+        "FFLAGS_DEBUG = -g -convert big_endian -free -CU -CB -check all -fpe0 -traceback" \
+        "CFLAGS_DEBUG = -g -traceback" \
+        "CXXFLAGS_DEBUG = -g -traceback" \
+        "LDFLAGS_DEBUG = -g -fpe0 -traceback" \
+        "FFLAGS_OMP = -qopenmp" \
+        "CFLAGS_OMP = -qopenmp" \
+        "CORE = $(CORE)" \
+        "DEBUG = $(DEBUG)" \
+        "USE_PAPI = $(USE_PAPI)" \
+        "OPENMP = $(OPENMP)" \
+        "CPPFLAGS = $(MODEL_FORMULATION) -D_MPI" )
+
 
 ifort-scorep:
 	( $(MAKE) all \
