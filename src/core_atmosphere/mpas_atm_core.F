@@ -7,6 +7,11 @@
 !
 module atm_core
 
+#ifdef _PAPI
+   include 'f90papi.h'
+   use papi
+#endif
+
    use mpas_derived_types
    use mpas_pool_routines
    use mpas_dmpar
@@ -48,6 +53,11 @@ module atm_core
       type (MPAS_Time_Type) :: startTime
 
       integer, pointer :: nVertLevels, maxEdges, maxEdges2, num_scalars
+
+#ifdef _PAPI
+      integer :: retval
+      call PAPIf_library_init(retval)
+#endif
 
       ierr = 0
 

@@ -8719,6 +8719,11 @@ use module_wrf_error
 
 ! --------- Modules ---------
 
+#ifdef _PAPI
+      include 'f90papi.h'
+      use papi
+#endif
+
       use parkind, only : im => kind_im, rb => kind_rb
       use rrsw_vsn
       use mcica_subcol_gen_sw, only: mcica_subcol_sw
@@ -8728,6 +8733,7 @@ use module_wrf_error
 !      use rrtmg_sw_init, only: rrtmg_sw_ini
       use rrtmg_sw_setcoef, only: setcoef_sw
       use rrtmg_sw_spcvmc, only: spcvmc_sw
+      
 
       implicit none
 
@@ -9884,7 +9890,11 @@ CONTAINS
  implicit none
 
 !=================================================================================================================
-
+#ifdef _PAPI
+ integer :: eventset, retval
+ integer(kind=PAPI_event_t) :: event = PAPI_TOT_CYC
+ integer*8 :: count
+#endif
 !--- input arguments:
  integer,intent(in):: ids,ide, jds,jde, kds,kde, &
                       ims,ime, jms,jme, kms,kme, &
@@ -10010,6 +10020,13 @@ CONTAINS
  inflgsw  = 2
  iceflgsw = 3
  liqflgsw = 1
+
+#ifdef _PAPI
+ call PAPIf_create_eventset(eventset)
+ call PAPIf_add_event(eventset, event)
+
+ call PAPIf_start(eventset)
+#endif
 
 !--- latitude loop:
  j_loop: do j = jts,jte
@@ -10445,7 +10462,15 @@ CONTAINS
 
     end do i_loop !end longitude loop.
 
- end do j_loop !end latitude loop.                                           
+ end do j_loop !end latitude loop.             
+ 
+#ifdef _PAPI
+ call PAPIf_stop(eventset)
+ call PAPIf_read(eventset, count)
+ call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count/))
+ call PAPIf_cleanup_eventset(eventset)
+ call PAPIf_destroy_eventset(eventset)
+#endif
 
  end subroutine rrtmg_swrad
 
