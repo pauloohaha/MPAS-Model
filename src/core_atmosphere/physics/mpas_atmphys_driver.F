@@ -176,11 +176,16 @@
    stop
  endif
 
- call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
- if( retval .ne. PAPI_OK ) then
+ call PAPIf_query_event(PAPI_TOT_INS, retval)
+ if(retval .eq. PAPI_OK) then
+   call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
+   if( retval .ne. PAPI_OK ) then
    print *,'Error at PAPIf_add_event'
    stop
- endif
+   endif
+ else
+   print *,'********TOT INS not supported************'
+ end if
 
  call PAPIf_start(eventset, retval)
  if( retval .ne. PAPI_OK ) then
@@ -384,7 +389,7 @@
 #ifdef _PAPI
  count(1) = 2
  count(2) = 3
- call PAPIf_stop(eventset, count, retval)
+ call PAPIf_stop(eventset, count(1), retval)
  if( retval .ne. PAPI_OK ) then
    print *,'Error at PAPIf_stop'
    stop
