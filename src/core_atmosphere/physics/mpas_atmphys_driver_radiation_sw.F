@@ -704,7 +704,7 @@
 !local variables:
 #ifdef _PAPI
  integer :: eventset, retval
- integer :: count
+ integer*8 :: count
 #endif
  integer:: o3input
  real(kind=RKIND):: radt,xtime_m
@@ -747,6 +747,7 @@
        if(config_o3climatology) o3input = 2
 
 #ifdef _PAPI
+       eventset = PAPI_NULL
        call PAPIf_create_eventset(eventset, retval)
        call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
        call PAPIf_start(eventset, retval)
@@ -779,11 +780,9 @@
        call mpas_timer_stop('RRTMG_sw')
 
 #ifdef _PAPI
-             call PAPIf_stop(eventset)
-             call PAPIf_read(eventset, count)
+             count = 2
+             call PAPIf_stop(eventset, count, retval)
              call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count/))
-             call PAPIf_cleanup_eventset(eventset)
-             call PAPIf_destroy_eventset(eventset)
 #endif
 
     case ("cam_sw")
