@@ -142,7 +142,7 @@
 !local variables:
 #ifdef _PAPI
  integer :: eventset, retval
- integer :: count(2)
+ integer*8 :: count(2)
 #endif
  type(block_type),pointer:: block
 
@@ -176,16 +176,11 @@
    stop
  endif
 
- call PAPIf_query_event(PAPI_TOT_INS, retval)
- if(retval .eq. PAPI_OK) then
-   call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
-   if( retval .ne. PAPI_OK ) then
+ call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
+ if( retval .ne. PAPI_OK ) then
    print *,'Error at PAPIf_add_event'
    stop
-   endif
- else
-   print *,'********TOT INS not supported************'
- end if
+ endif
 
  call PAPIf_start(eventset, retval)
  if( retval .ne. PAPI_OK ) then
@@ -395,8 +390,8 @@
    stop
  endif
 
- call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count(1)/))
- call mpas_log_write(' ****** PAPI TOT INS $i', intArgs=(/count(2)/))
+ print *,'******TOT CYC', count(1)
+ print *,'******TOT INS', count(2)
 #endif
 
 !call mpas_log_write('--- enter subroutine mpas_atmphys_driver:')
