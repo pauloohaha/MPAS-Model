@@ -8719,11 +8719,6 @@ use module_wrf_error
 
 ! --------- Modules ---------
 
-#ifdef _PAPI
-      include 'f90papi.h'
-      use papi
-#endif
-
       use parkind, only : im => kind_im, rb => kind_rb
       use rrsw_vsn
       use mcica_subcol_gen_sw, only: mcica_subcol_sw
@@ -8734,6 +8729,9 @@ use module_wrf_error
       use rrtmg_sw_setcoef, only: setcoef_sw
       use rrtmg_sw_spcvmc, only: spcvmc_sw
       
+#ifdef _PAPI
+      include 'f90papi.h'
+#endif
 
       implicit none
 

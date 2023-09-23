@@ -7,15 +7,14 @@
 !
 module atm_core
 
-#ifdef _PAPI
-   include 'f90papi.h'
-   use papi
-#endif
-
    use mpas_derived_types
    use mpas_pool_routines
    use mpas_dmpar
    use mpas_log, only : mpas_log_write, mpas_log_info
+
+#ifdef _PAPI
+   include 'f90papi.h'
+#endif
 
    type (MPAS_Clock_type), pointer :: clock
 
