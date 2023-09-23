@@ -8728,10 +8728,6 @@ use module_wrf_error
 !      use rrtmg_sw_init, only: rrtmg_sw_ini
       use rrtmg_sw_setcoef, only: setcoef_sw
       use rrtmg_sw_spcvmc, only: spcvmc_sw
-      
-#ifdef _PAPI
-      include 'f90papi.h'
-#endif
 
       implicit none
 
@@ -8861,8 +8857,12 @@ use module_wrf_error
       use rrsw_con, only : heatfac, oneminus, pi
       use rrsw_wvn, only : wavenum1, wavenum2
 
-! ------- Declarations
+#ifdef _PAPI
+      #include 'f90papi.h'
+#endif
 
+! ------- Declarations
+   
 ! ----- Input -----
 
       integer(kind=im), intent(in) :: ncol            ! Number of horizontal columns     
@@ -9890,7 +9890,7 @@ CONTAINS
 !=================================================================================================================
 #ifdef _PAPI
  integer :: eventset, retval
- integer(kind=PAPI_event_t) :: event = PAPI_TOT_CYC
+ integer :: event = PAPI_TOT_CYC
  integer*8 :: count
 #endif
 !--- input arguments:
