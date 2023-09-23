@@ -676,7 +676,11 @@
  subroutine driver_radiation_sw(itimestep,configs,mesh,state,time_lev,diag_physics,atm_input, &
                                 sfc_input,tend_physics,xtime_s,its,ite)
 !=================================================================================================================
-
+#ifdef _PAPI
+ include 'f90papi.h'
+ integer :: eventset, retval
+ integer*8 :: count
+#endif
 !input arguments:
  integer,intent(in):: itimestep
  type(mpas_pool_type),intent(in):: configs
@@ -740,6 +744,12 @@
        o3input = 0
        if(config_o3climatology) o3input = 2
 
+#ifdef _PAPI
+       call PAPIf_create_eventset(eventset, retval)
+       call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
+       call PAPIf_start(eventset, retval)
+#endif
+
        call mpas_timer_start('RRTMG_sw')
        call rrtmg_swrad( &
               p3d        = pres_hyd_p   , p8w        = pres2_hyd_p   , pi3d     = pi_p     , &
@@ -765,6 +775,14 @@
               its = its , ite = ite , jts = jts , jte = jte , kts = kts , kte = kte          &
                        )
        call mpas_timer_stop('RRTMG_sw')
+
+#ifdef _PAPI
+             call PAPIf_stop(eventset)
+             call PAPIf_read(eventset, count)
+             call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count/))
+             call PAPIf_cleanup_eventset(eventset)
+             call PAPIf_destroy_eventset(eventset)
+#endif
 
     case ("cam_sw")
        call mpas_timer_start('CAMRAD_sw')

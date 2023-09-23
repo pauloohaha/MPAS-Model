@@ -8857,10 +8857,6 @@ use module_wrf_error
       use rrsw_con, only : heatfac, oneminus, pi
       use rrsw_wvn, only : wavenum1, wavenum2
 
-#ifdef _PAPI
-      #include 'f90papi.h'
-#endif
-
 ! ------- Declarations
    
 ! ----- Input -----
@@ -9888,10 +9884,7 @@ CONTAINS
  implicit none
 
 !=================================================================================================================
-#ifdef _PAPI
- integer :: eventset, retval
- integer*8 :: count
-#endif
+
 !--- input arguments:
  integer,intent(in):: ids,ide, jds,jde, kds,kde, &
                       ims,ime, jms,jme, kms,kme, &
@@ -10018,12 +10011,7 @@ CONTAINS
  iceflgsw = 3
  liqflgsw = 1
 
-#ifdef _PAPI
- call PAPIf_create_eventset(eventset)
- call PAPIf_add_event(eventset, PAPI_TOT_CYC)
 
- call PAPIf_start(eventset)
-#endif
 
 !--- latitude loop:
  j_loop: do j = jts,jte
@@ -10461,13 +10449,6 @@ CONTAINS
 
  end do j_loop !end latitude loop.             
  
-#ifdef _PAPI
- call PAPIf_stop(eventset)
- call PAPIf_read(eventset, count)
- call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count/))
- call PAPIf_cleanup_eventset(eventset)
- call PAPIf_destroy_eventset(eventset)
-#endif
 
  end subroutine rrtmg_swrad
 
