@@ -678,8 +678,6 @@
 !=================================================================================================================
 #ifdef _PAPI
  include 'f90papi.h'
- integer :: eventset, retval
- integer*8 :: count
 #endif
 !input arguments:
  integer,intent(in):: itimestep
@@ -704,6 +702,10 @@
  character(len=StrKIND),pointer:: radt_sw_scheme
 
 !local variables:
+#ifdef _PAPI
+ integer :: eventset, retval
+ integer :: count
+#endif
  integer:: o3input
  real(kind=RKIND):: radt,xtime_m
 
