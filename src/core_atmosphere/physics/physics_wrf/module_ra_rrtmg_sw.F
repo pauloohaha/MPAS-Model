@@ -9890,7 +9890,6 @@ CONTAINS
 !=================================================================================================================
 #ifdef _PAPI
  integer :: eventset, retval
- integer :: event = PAPI_TOT_CYC
  integer*8 :: count
 #endif
 !--- input arguments:
@@ -10021,7 +10020,7 @@ CONTAINS
 
 #ifdef _PAPI
  call PAPIf_create_eventset(eventset)
- call PAPIf_add_event(eventset, event)
+ call PAPIf_add_event(eventset, PAPI_TOT_CYC)
 
  call PAPIf_start(eventset)
 #endif
