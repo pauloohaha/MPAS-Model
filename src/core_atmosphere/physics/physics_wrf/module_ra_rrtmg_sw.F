@@ -10076,7 +10076,8 @@ CONTAINS
          
           call PAPIf_start(eventset, retval)
           if( retval .ne. PAPI_OK ) then
-            print *,'Error at PAPIf_start'
+            print *,'Error at PAPIf_start, retval = '
+            print *, retval
             stop
           endif
 #endif
