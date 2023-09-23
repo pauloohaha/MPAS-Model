@@ -704,7 +704,7 @@
 !local variables:
 #ifdef _PAPI
  integer :: eventset, retval
- integer*8 :: count
+ integer :: count
 #endif
  integer:: o3input
  real(kind=RKIND):: radt,xtime_m
@@ -749,8 +749,22 @@
 #ifdef _PAPI
        eventset = PAPI_NULL
        call PAPIf_create_eventset(eventset, retval)
+       if( ret_val .ne. PAPI_OK ) then
+         print *,'Error at PAPIf_create_eventset'
+         stop
+       endif
+
        call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
+       if( ret_val .ne. PAPI_OK ) then
+         print *,'Error at PAPIf_add_event'
+         stop
+       endif
+
        call PAPIf_start(eventset, retval)
+       if( ret_val .ne. PAPI_OK ) then
+         print *,'Error at PAPIf_start'
+         stop
+       endif
 #endif
 
        call mpas_timer_start('RRTMG_sw')
@@ -782,6 +796,11 @@
 #ifdef _PAPI
              count = 2
              call PAPIf_stop(eventset, count, retval)
+             if( ret_val .ne. PAPI_OK ) then
+               print *,'Error at PAPIf_stop'
+               stop
+             endif
+
              call mpas_log_write(' ****** PAPI TOT CYC $i', intArgs=(/count/))
 #endif
 
