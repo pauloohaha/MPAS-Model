@@ -9924,8 +9924,9 @@ CONTAINS
 !local variables and arrays:
 #ifdef _PAPI
  integer :: eventset, retval
- integer*8 :: count(2)
+ integer*8 :: count(3)
  integer :: countTemp1, countTemp2
+ integer :: logFlag
 #endif
  logical:: dorrsw
 
@@ -10018,7 +10019,9 @@ CONTAINS
  iceflgsw = 3
  liqflgsw = 1
 
-
+#ifdef _PAPI
+ logFlag = 1
+#endif
 
 !--- latitude loop:
  j_loop: do j = jts,jte
@@ -10047,7 +10050,7 @@ CONTAINS
              pw1d(k) = p8w(i,k,j) / 100.
              tw1d(k) = t8w(i,k,j)
           enddo
-          
+
 #ifdef _PAPI
           retval = PAPI_VER_CURRENT
           call PAPIf_library_init(retval)
@@ -10074,6 +10077,17 @@ CONTAINS
             print *,'Error at PAPIf_add_event'
             stop
           endif
+
+          call PAPIf_query_event(PAPI_LD_INS, retval)
+          if(retval .eq. PAPI_OK) then
+            call PAPIf_add_event(eventset, PAPI_LD_INS, retval)
+            if( retval .ne. PAPI_OK ) then
+              print *,'Error at PAPIf_add_event'
+              stop
+            endif
+          else
+            print *,'LD_INS not supportted'
+          endif
          
           call PAPIf_start(eventset, retval)
           if( retval .ne. PAPI_OK ) then
@@ -10099,19 +10113,28 @@ CONTAINS
 #ifdef _PAPI
              count(1) = 2
              count(2) = 3
+             count(3) = 4
              call PAPIf_stop(eventset, count(1), retval)
              if( retval .ne. PAPI_OK ) then
                print *,'Error at PAPIf_stop'
                stop
              endif
-
-             countTemp1 = mod(count(1), huge(countTemp1))
-             countTemp2 = count(1)/huge(countTemp1)
-             call mpas_log_write(' ****** PAPI TOT CYC $i $i', intArgs=(/countTemp2/), intArgs=(/countTemp1/))
+             
+             if(logFlag .eq. 1) then
+               countTemp1 = mod(count(1), huge(countTemp1))
+               countTemp2 = count(1)/huge(countTemp1)
+               call mpas_log_write(' ****** PAPI TOT CYC $i $i', intArgs=(/countTemp2, countTemp1/))
             
-             countTemp1 = mod(count(2), huge(countTemp1))
-             countTemp2 = count(2)/huge(countTemp1)
-             call mpas_log_write(' ****** PAPI TOT INS $i $i', intArgs=(/countTemp2/), intArgs=(/countTemp1/))
+               countTemp1 = mod(count(2), huge(countTemp1))
+               countTemp2 = count(2)/huge(countTemp1)
+               call mpas_log_write(' ****** PAPI TOT INS $i $i', intArgs=(/countTemp2, countTemp1/))
+
+               countTemp1 = mod(count(3), huge(countTemp1))
+               countTemp2 = count(3)/huge(countTemp1)
+               call mpas_log_write(' ****** PAPI LD INS $i $i', intArgs=(/countTemp2, countTemp1/))
+             endif
+
+             logFlag = 0
 #endif
 
           !--- initialize the local arrays containing the different cloud water and ice condenstates:
