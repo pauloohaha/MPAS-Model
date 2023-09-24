@@ -380,6 +380,7 @@ CONTAINS
       if(logFlag .gt. 0) then
 
         call mpas_log_write(' ****** kts: $i, kte: $i', intArgs=(/kts, kte/))
+        call mpas_log_write(' ****** its: $i, ite: $i', intArgs=(/its, ite/))
 
         countTemp1 = mod(count(1), huge(countTemp1))
         countTemp2 = count(1)/huge(countTemp1)
