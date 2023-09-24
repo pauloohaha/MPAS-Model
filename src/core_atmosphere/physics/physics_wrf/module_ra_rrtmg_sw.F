@@ -10111,15 +10111,15 @@ CONTAINS
             print *,'SR_INS not supportted'
           endif
           
-          call PAPIf_query_event(PAPI_MEM_SCY, retval)
+          call PAPIf_query_event(PAPI_RES_STL, retval)
           if(retval .eq. PAPI_OK) then
-            call PAPIf_add_event(eventset, PAPI_MEM_SCY, retval)
+            call PAPIf_add_event(eventset, PAPI_RES_STL, retval)
             if( retval .ne. PAPI_OK ) then
               print *,'Error at PAPIf_add_event'
               stop
             endif
           else
-            print *,'MEM_SCY not supportted'
+            print *,'RES_STL not supportted'
           endif
          
           call PAPIf_start(eventset, retval)
@@ -10177,7 +10177,7 @@ CONTAINS
 
                countTemp1 = mod(count(5), huge(countTemp1))
                countTemp2 = count(5)/huge(countTemp1)
-               call mpas_log_write(' ****** PAPI_MEM_SCY $i $i', intArgs=(/countTemp2, countTemp1/))
+               call mpas_log_write(' ****** PAPI_RES_STL $i $i', intArgs=(/countTemp2, countTemp1/))
 
                call mpas_log_write('     ')
              endif
