@@ -9864,17 +9864,6 @@ use module_ra_rrtmg_lw, only : inirad, o3data, relcalc, reicalc, retab
 
 CONTAINS
 
-#ifdef _PAPI
- subroutine compile_flag (inputx)
-
-   integer :: temp
-
-   temp = inputx+1
-
-   inputx = temp-2
- end subroutine compile_flag
-#endif
-
 !=================================================================================================================
  subroutine rrtmg_swrad( &
                        p3d,p8w,pi3d,t3d,t8w,dz8w,qv3d,qc3d,qr3d,       &
@@ -9891,13 +9880,10 @@ CONTAINS
                        ims,ime, jms,jme, kms,kme,                      &
                        its,ite, jts,jte, kts,kte                       &
                        )
- use mpas_log, only : mpas_log_write
  implicit none
 
 !=================================================================================================================
-#ifdef _PAPI
- include 'f90papi.h'
-#endif
+
 !--- input arguments:
  integer,intent(in):: ids,ide, jds,jde, kds,kde, &
                       ims,ime, jms,jme, kms,kme, &
@@ -9933,12 +9919,6 @@ CONTAINS
      swupflx,swupflxc,swdnflx,swdnflxc
 
 !local variables and arrays:
-#ifdef _PAPI
- integer :: eventset, retval
- integer*8 :: count(20)
- integer :: countTemp1, countTemp2
- integer :: logFlag
-#endif
  logical:: dorrsw
 
  integer:: na,nb,ncol,nlay,icld,inflgsw,iceflgsw,liqflgsw
@@ -10029,10 +10009,6 @@ CONTAINS
  inflgsw  = 2
  iceflgsw = 3
  liqflgsw = 1
-
-#ifdef _PAPI
- logFlag = 3
-#endif
 
 !--- latitude loop:
  j_loop: do j = jts,jte
@@ -10404,75 +10380,6 @@ CONTAINS
 
 
           !--- CALL TO THE RRTMG SHORT WAVE RADIATION MODEL:
-
-#ifdef _PAPI
-          retval = PAPI_VER_CURRENT
-          call PAPIf_library_init(retval)
-          if( retval .ne. PAPI_VER_CURRENT ) then
-            call mpas_log_write('Error at PAPIf_library_init')
-            stop
-          endif
-         
-          eventset = PAPI_NULL
-          call PAPIf_create_eventset(eventset, retval)
-          if( retval .ne. PAPI_OK ) then
-            call mpas_log_write('Error at PAPIf_create_eventset')
-            stop
-          endif
-         
-          call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
-          if( retval .ne. PAPI_OK ) then
-            call mpas_log_write('Error at PAPIf_add_event PAPI_TOT_CYC')
-            stop
-          endif
-         
-          call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
-          if( retval .ne. PAPI_OK ) then
-            call mpas_log_write('Error at PAPIf_add_event PAPI_TOT_INS')
-            stop
-          endif
-
-          call PAPIf_query_event(PAPI_LD_INS, retval)
-          if(retval .eq. PAPI_OK) then
-            call PAPIf_add_event(eventset, PAPI_LD_INS, retval)
-            if( retval .ne. PAPI_OK ) then
-              call mpas_log_write('Error at PAPIf_add_event PAPI_LD_INS')
-              stop
-            endif
-          else
-            print *,'LD_INS not supportted'
-          endif
-
-          call PAPIf_query_event(PAPI_SR_INS, retval)
-          if(retval .eq. PAPI_OK) then
-            call PAPIf_add_event(eventset, PAPI_SR_INS, retval)
-            if( retval .ne. PAPI_OK ) then
-              call mpas_log_write('Error at PAPIf_add_event PAPI_SR_INS')
-              stop
-            endif
-          else
-            print *,'SR_INS not supportted'
-          endif
-          
-          call PAPIf_query_event(PAPI_RES_STL, retval)
-          if(retval .eq. PAPI_OK) then
-            call PAPIf_add_event(eventset, PAPI_RES_STL, retval)
-            if( retval .ne. PAPI_OK ) then
-              call mpas_log_write('Error at PAPIf_add_event PAPI_RES_STL')
-              stop
-            endif
-          else
-            print *,'RES_STL not supportted'
-          endif
-         
-          call PAPIf_start(eventset, retval)
-          if( retval .ne. PAPI_OK ) then
-            print *,'Error at PAPIf_start'
-            stop
-          endif
-
-          call compile_flag(logFlag)
-#endif
           call rrtmg_sw &
                      (ncol      , nlay      , icld      , play      , plev    , tlay     , &
                       tlev      , tsfc      , h2ovmr    , o3vmr     , co2vmr  , ch4vmr   , &
@@ -10485,55 +10392,7 @@ CONTAINS
                       aer_opt   ,                                                          &
                       sibvisdir , sibvisdif , sibnirdir , sibnirdif , & !added for ssib coupling.
                       swdkdir   , swdkdif)
-#ifdef _PAPI
-                      count(1) = 2
-                      count(2) = 3
-                      count(3) = 4
-                      call PAPIf_stop(eventset, count(1), retval)
-                      if( retval .ne. PAPI_OK ) then
-                        print *,'Error at PAPIf_stop'
-                        stop
-                      endif
 
-                      call PAPIf_cleanup_eventset(eventset, retval)
-                      if( retval .ne. PAPI_OK ) then
-                        print *,'Error at PAPIf_cleanup_eventset'
-                        stop
-                      endif
-         
-                      call PAPIf_destroy_eventset(eventset, retval)
-                      if( retval .ne. PAPI_OK ) then
-                        print *,'Error at PAPIf_destroy_eventset'
-                        stop
-                      endif
-                      
-                      if(logFlag .gt. 0) then
-         
-                        call mpas_log_write(' ****** kts: $i, kte: $i', intArgs=(/kts, kte/))
-         
-                        countTemp1 = mod(count(1), huge(countTemp1))
-                        countTemp2 = count(1)/huge(countTemp1)
-                        call mpas_log_write(' ****** PAPI_TOT_CYC $i $i', intArgs=(/countTemp2, countTemp1/))
-                     
-                        countTemp1 = mod(count(2), huge(countTemp1))
-                        countTemp2 = count(2)/huge(countTemp1)
-                        call mpas_log_write(' ****** PAPI_TOT_INS $i $i', intArgs=(/countTemp2, countTemp1/))
-         
-                        countTemp1 = mod(count(3), huge(countTemp1))
-                        countTemp2 = count(3)/huge(countTemp1)
-                        call mpas_log_write(' ****** PAPI_LD_INS $i $i', intArgs=(/countTemp2, countTemp1/))
-         
-                        countTemp1 = mod(count(4), huge(countTemp1))
-                        countTemp2 = count(4)/huge(countTemp1)
-                        call mpas_log_write(' ****** PAPI_SR_INS $i $i', intArgs=(/countTemp2, countTemp1/))
-         
-                        countTemp1 = mod(count(5), huge(countTemp1))
-                        countTemp2 = count(5)/huge(countTemp1)
-                        call mpas_log_write(' ****** PAPI_RES_STL $i $i', intArgs=(/countTemp2, countTemp1/))
-         
-                        call mpas_log_write('     ')
-                      endif
-#endif
           !--- OUTPUTS:
           gsw(i,j)  = swdflx(1,1) - swuflx(1,1)
           swcf(i,j) = (swdflx(1,kte+2)-swuflx(1,kte+2)) - (swdflxc(1,kte+2)-swuflxc(1,kte+2))

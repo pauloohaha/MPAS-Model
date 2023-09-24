@@ -79,7 +79,15 @@ CONTAINS
 #endif
                                                                    )
 !-------------------------------------------------------------------
+#ifdef _PAPI
+  use mpas_log, only : mpas_log_write
+#endif
+
   IMPLICIT NONE
+
+#ifdef _PAPI
+  include 'f90papi.h'
+#endif
 !-------------------------------------------------------------------
   INTEGER,      INTENT(IN   )    ::   ids,ide, jds,jde, kds,kde , &
                                       ims,ime, jms,jme, kms,kme , &
@@ -154,6 +162,12 @@ CONTAINS
 #endif
 
 ! LOCAL VAR
+#ifdef _PAPI
+  integer :: eventset, retval
+  integer*8 :: count(20)
+  integer :: countTemp1, countTemp2
+  integer :: logFlag
+#endif
   REAL, DIMENSION( its:ite , kts:kte ) ::   t
   REAL, DIMENSION( its:ite , kts:kte, 2 ) ::   qci
   REAL, DIMENSION( its:ite , kts:kte, 3 ) ::   qrs
@@ -169,6 +183,79 @@ CONTAINS
   REAL, DIMENSION( kts:kte ) :: qc1d
   REAL, DIMENSION( kts:kte ) :: qi1d
   REAL, DIMENSION( kts:kte ) :: re_qc, re_qi, re_qs
+
+#ifdef _PAPI
+  logFlag = 3
+#endif
+
+#ifdef _PAPI
+ retval = PAPI_VER_CURRENT
+ call PAPIf_library_init(retval)
+ if( retval .ne. PAPI_VER_CURRENT ) then
+   call mpas_log_write('Error at PAPIf_library_init')
+   stop
+ endif
+
+ eventset = PAPI_NULL
+ call PAPIf_create_eventset(eventset, retval)
+ if( retval .ne. PAPI_OK ) then
+   call mpas_log_write('Error at PAPIf_create_eventset')
+   stop
+ endif
+
+ call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
+ if( retval .ne. PAPI_OK ) then
+   call mpas_log_write('Error at PAPIf_add_event PAPI_TOT_CYC')
+   stop
+ endif
+
+ call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
+ if( retval .ne. PAPI_OK ) then
+   call mpas_log_write('Error at PAPIf_add_event PAPI_TOT_INS')
+   stop
+ endif
+
+ call PAPIf_query_event(PAPI_LD_INS, retval)
+ if(retval .eq. PAPI_OK) then
+   call PAPIf_add_event(eventset, PAPI_LD_INS, retval)
+   if( retval .ne. PAPI_OK ) then
+     call mpas_log_write('Error at PAPIf_add_event PAPI_LD_INS')
+     stop
+   endif
+ else
+   print *,'LD_INS not supportted'
+ endif
+
+ call PAPIf_query_event(PAPI_SR_INS, retval)
+ if(retval .eq. PAPI_OK) then
+   call PAPIf_add_event(eventset, PAPI_SR_INS, retval)
+   if( retval .ne. PAPI_OK ) then
+     call mpas_log_write('Error at PAPIf_add_event PAPI_SR_INS')
+     stop
+   endif
+ else
+   print *,'SR_INS not supportted'
+ endif
+ 
+ call PAPIf_query_event(PAPI_RES_STL, retval)
+ if(retval .eq. PAPI_OK) then
+   call PAPIf_add_event(eventset, PAPI_RES_STL, retval)
+   if( retval .ne. PAPI_OK ) then
+     call mpas_log_write('Error at PAPIf_add_event PAPI_RES_STL')
+     stop
+   endif
+ else
+   print *,'RES_STL not supportted'
+ endif
+
+ call PAPIf_start(eventset, retval)
+ if( retval .ne. PAPI_OK ) then
+   print *,'Error at PAPIf_start'
+   stop
+ endif
+
+ logFlag = logFlag - 1
+#endif
 
       DO j=jts,jte
          DO k=kts,kte
@@ -267,6 +354,56 @@ CONTAINS
         enddo
 #endif
       ENDDO
+
+#ifdef _PAPI
+      count(1) = 2
+      count(2) = 3
+      count(3) = 4
+      call PAPIf_stop(eventset, count(1), retval)
+      if( retval .ne. PAPI_OK ) then
+        print *,'Error at PAPIf_stop'
+        stop
+      endif
+
+      call PAPIf_cleanup_eventset(eventset, retval)
+      if( retval .ne. PAPI_OK ) then
+        print *,'Error at PAPIf_cleanup_eventset'
+        stop
+      endif
+
+      call PAPIf_destroy_eventset(eventset, retval)
+      if( retval .ne. PAPI_OK ) then
+        print *,'Error at PAPIf_destroy_eventset'
+        stop
+      endif
+      
+      if(logFlag .gt. 0) then
+
+        call mpas_log_write(' ****** kts: $i, kte: $i', intArgs=(/kts, kte/))
+
+        countTemp1 = mod(count(1), huge(countTemp1))
+        countTemp2 = count(1)/huge(countTemp1)
+        call mpas_log_write(' ****** PAPI_TOT_CYC $i $i', intArgs=(/countTemp2, countTemp1/))
+     
+        countTemp1 = mod(count(2), huge(countTemp1))
+        countTemp2 = count(2)/huge(countTemp1)
+        call mpas_log_write(' ****** PAPI_TOT_INS $i $i', intArgs=(/countTemp2, countTemp1/))
+
+        countTemp1 = mod(count(3), huge(countTemp1))
+        countTemp2 = count(3)/huge(countTemp1)
+        call mpas_log_write(' ****** PAPI_LD_INS $i $i', intArgs=(/countTemp2, countTemp1/))
+
+        countTemp1 = mod(count(4), huge(countTemp1))
+        countTemp2 = count(4)/huge(countTemp1)
+        call mpas_log_write(' ****** PAPI_SR_INS $i $i', intArgs=(/countTemp2, countTemp1/))
+
+        countTemp1 = mod(count(5), huge(countTemp1))
+        countTemp2 = count(5)/huge(countTemp1)
+        call mpas_log_write(' ****** PAPI_RES_STL $i $i', intArgs=(/countTemp2, countTemp1/))
+
+        call mpas_log_write('     ')
+      endif
+#endif
   END SUBROUTINE wsm6
 !===================================================================
 !
