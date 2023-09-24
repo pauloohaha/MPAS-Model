@@ -10134,6 +10134,9 @@ CONTAINS
              endif
              
              if(logFlag .gt. 0) then
+
+               call mpas_log_write(' ****** kts: $i, kte: $i', intArgs=(/kts, kte/))
+
                countTemp1 = mod(count(1), huge(countTemp1))
                countTemp2 = count(1)/huge(countTemp1)
                call mpas_log_write(' ****** PAPI TOT CYC $i $i', intArgs=(/countTemp2, countTemp1/))
@@ -10148,6 +10151,8 @@ CONTAINS
 
                call mpas_log_write('     ')
              endif
+
+             PAPIf_destroy_eventset(eventset, retval)
 
              logFlag = logFlag - 1
 #endif
