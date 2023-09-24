@@ -9869,7 +9869,7 @@ CONTAINS
 
    integer :: temp
 
-   temp = inputx+ 2
+   temp = inputx+1
 
    inputx = temp-2
  end subroutine compile_flag
@@ -10063,8 +10063,6 @@ CONTAINS
           enddo
 
 #ifdef _PAPI
-          call compile_flag(logFlag)
-
           retval = PAPI_VER_CURRENT
           call PAPIf_library_init(retval)
           if( retval .ne. PAPI_VER_CURRENT ) then
@@ -10129,6 +10127,8 @@ CONTAINS
             print *,'Error at PAPIf_start'
             stop
           endif
+
+          call compile_flag(logFlag)
 #endif
           do k = kts, kte
              p1d(k)      = p3d(i,k,j) / 100.
@@ -10181,10 +10181,6 @@ CONTAINS
 
                call mpas_log_write('     ')
              endif
-
-             PAPIf_destroy_eventset(eventset, retval)
-
-             logFlag = logFlag - 1
 #endif
 
           !--- initialize the local arrays containing the different cloud water and ice condenstates:
