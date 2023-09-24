@@ -9935,7 +9935,7 @@ CONTAINS
 !local variables and arrays:
 #ifdef _PAPI
  integer :: eventset, retval
- integer*8 :: count(3)
+ integer*8 :: count(20)
  integer :: countTemp1, countTemp2
  integer :: logFlag
 #endif
@@ -10101,6 +10101,28 @@ CONTAINS
           else
             print *,'LD_INS not supportted'
           endif
+
+          call PAPIf_query_event(PAPI_SR_INS, retval)
+          if(retval .eq. PAPI_OK) then
+            call PAPIf_add_event(eventset, PAPI_SR_INS, retval)
+            if( retval .ne. PAPI_OK ) then
+              print *,'Error at PAPIf_add_event'
+              stop
+            endif
+          else
+            print *,'SR_INS not supportted'
+          endif
+          
+          call PAPIf_query_event(PAPI_MEM_SCY, retval)
+          if(retval .eq. PAPI_OK) then
+            call PAPIf_add_event(eventset, PAPI_MEM_SCY, retval)
+            if( retval .ne. PAPI_OK ) then
+              print *,'Error at PAPIf_add_event'
+              stop
+            endif
+          else
+            print *,'MEM_SCY not supportted'
+          endif
          
           call PAPIf_start(eventset, retval)
           if( retval .ne. PAPI_OK ) then
@@ -10139,15 +10161,23 @@ CONTAINS
 
                countTemp1 = mod(count(1), huge(countTemp1))
                countTemp2 = count(1)/huge(countTemp1)
-               call mpas_log_write(' ****** PAPI TOT CYC $i $i', intArgs=(/countTemp2, countTemp1/))
+               call mpas_log_write(' ****** PAPI_TOT_CYC $i $i', intArgs=(/countTemp2, countTemp1/))
             
                countTemp1 = mod(count(2), huge(countTemp1))
                countTemp2 = count(2)/huge(countTemp1)
-               call mpas_log_write(' ****** PAPI TOT INS $i $i', intArgs=(/countTemp2, countTemp1/))
+               call mpas_log_write(' ****** PAPI_TOT_INS $i $i', intArgs=(/countTemp2, countTemp1/))
 
                countTemp1 = mod(count(3), huge(countTemp1))
                countTemp2 = count(3)/huge(countTemp1)
-               call mpas_log_write(' ****** PAPI LD INS $i $i', intArgs=(/countTemp2, countTemp1/))
+               call mpas_log_write(' ****** PAPI_LD_INS $i $i', intArgs=(/countTemp2, countTemp1/))
+
+               countTemp1 = mod(count(4), huge(countTemp1))
+               countTemp2 = count(4)/huge(countTemp1)
+               call mpas_log_write(' ****** PAPI_SR_INS $i $i', intArgs=(/countTemp2, countTemp1/))
+
+               countTemp1 = mod(count(5), huge(countTemp1))
+               countTemp2 = count(5)/huge(countTemp1)
+               call mpas_log_write(' ****** PAPI_MEM_SCY $i $i', intArgs=(/countTemp2, countTemp1/))
 
                call mpas_log_write('     ')
              endif
