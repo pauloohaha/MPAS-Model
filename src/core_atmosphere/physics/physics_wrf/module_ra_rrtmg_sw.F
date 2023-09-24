@@ -10066,26 +10066,26 @@ CONTAINS
           retval = PAPI_VER_CURRENT
           call PAPIf_library_init(retval)
           if( retval .ne. PAPI_VER_CURRENT ) then
-            print *,'Error at PAPIf_library_init'
+            mpas_log_write('Error at PAPIf_library_init')
             stop
           endif
          
           eventset = PAPI_NULL
           call PAPIf_create_eventset(eventset, retval)
           if( retval .ne. PAPI_OK ) then
-            print *,'Error at PAPIf_create_eventset'
+            mpas_log_write('Error at PAPIf_create_eventset')
             stop
           endif
          
           call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
           if( retval .ne. PAPI_OK ) then
-            print *,'Error at PAPIf_add_event'
+            mpas_log_write('Error at PAPIf_add_event PAPI_TOT_CYC')
             stop
           endif
          
           call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
           if( retval .ne. PAPI_OK ) then
-            print *,'Error at PAPIf_add_event'
+            mpas_log_write('Error at PAPIf_add_event PAPI_TOT_INS')
             stop
           endif
 
@@ -10093,7 +10093,7 @@ CONTAINS
           if(retval .eq. PAPI_OK) then
             call PAPIf_add_event(eventset, PAPI_LD_INS, retval)
             if( retval .ne. PAPI_OK ) then
-              print *,'Error at PAPIf_add_event'
+              mpas_log_write('Error at PAPIf_add_event PAPI_LD_INS')
               stop
             endif
           else
@@ -10104,7 +10104,7 @@ CONTAINS
           if(retval .eq. PAPI_OK) then
             call PAPIf_add_event(eventset, PAPI_SR_INS, retval)
             if( retval .ne. PAPI_OK ) then
-              print *,'Error at PAPIf_add_event'
+              mpas_log_write('Error at PAPIf_add_event PAPI_SR_INS')
               stop
             endif
           else
@@ -10115,7 +10115,7 @@ CONTAINS
           if(retval .eq. PAPI_OK) then
             call PAPIf_add_event(eventset, PAPI_RES_STL, retval)
             if( retval .ne. PAPI_OK ) then
-              print *,'Error at PAPIf_add_event'
+              mpas_log_write('Error at PAPIf_add_event PAPI_RES_STL')
               stop
             endif
           else
