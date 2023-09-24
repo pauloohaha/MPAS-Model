@@ -105,9 +105,7 @@
 !=================================================================================================================
  subroutine physics_driver(domain,itimestep,xtime_s)
 !=================================================================================================================
-#ifdef _PAPI
- include 'f90papi.h'
-#endif
+
 !input arguments:
  integer,intent(in):: itimestep
  real(kind=RKIND),intent(in):: xtime_s
@@ -140,11 +138,6 @@
  real(kind=RKIND),pointer:: config_bucket_radt
 
 !local variables:
-#ifdef _PAPI
- integer :: eventset, retval
- integer*8 :: count(2)
- integer :: countTemp1, countTemp2
-#endif
  type(block_type),pointer:: block
 
  integer:: time_lev
@@ -156,39 +149,6 @@
 !=================================================================================================================
 !call mpas_log_write('')
 !call mpas_log_write('--- enter subroutine mpas_atmphys_driver:')
-#ifdef _PAPI
- retval = PAPI_VER_CURRENT
- call PAPIf_library_init(retval)
- if( retval .ne. PAPI_VER_CURRENT ) then
-   print *,'Error at PAPIf_library_init'
-   stop
- endif
-
- eventset = PAPI_NULL
- call PAPIf_create_eventset(eventset, retval)
- if( retval .ne. PAPI_OK ) then
-   print *,'Error at PAPIf_create_eventset'
-   stop
- endif
-
- call PAPIf_add_event(eventset, PAPI_TOT_CYC, retval)
- if( retval .ne. PAPI_OK ) then
-   print *,'Error at PAPIf_add_event'
-   stop
- endif
-
- call PAPIf_add_event(eventset, PAPI_TOT_INS, retval)
- if( retval .ne. PAPI_OK ) then
-   print *,'Error at PAPIf_add_event'
-   stop
- endif
-
- call PAPIf_start(eventset, retval)
- if( retval .ne. PAPI_OK ) then
-   print *,'Error at PAPIf_start'
-   stop
- endif
-#endif
 
  call mpas_timer_start('physics driver')
 
@@ -382,23 +342,7 @@
 
  call mpas_timer_stop('physics driver')
 
-#ifdef _PAPI
- count(1) = 2
- count(2) = 3
- call PAPIf_stop(eventset, count(1), retval)
- if( retval .ne. PAPI_OK ) then
-   print *,'Error at PAPIf_stop'
-   stop
- endif
- 
- countTemp1 = mod(count(1), huge(countTemp1))
- countTemp2 = count(1)/huge(countTemp1)
- call mpas_log_write(' ****** PAPI TOT CYC $i $i', intArgs=(/countTemp2/), intArgs=(/countTemp1/))
- 
- countTemp1 = mod(count(2), huge(countTemp1))
- countTemp2 = count(2)/huge(countTemp1)
- call mpas_log_write(' ****** PAPI TOT INS $i $i', intArgs=(/countTemp2/), intArgs=(/countTemp1/))
-#endif
+
 
 !call mpas_log_write('--- enter subroutine mpas_atmphys_driver:')
 !call mpas_log_write('')
