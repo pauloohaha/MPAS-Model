@@ -9864,6 +9864,17 @@ use module_ra_rrtmg_lw, only : inirad, o3data, relcalc, reicalc, retab
 
 CONTAINS
 
+#ifdef _PAPI
+ subroutine compile_flag (inputx)
+
+   integer :: temp
+
+   temp = inputx+ 2
+
+   inputx = temp-2
+ end subroutine compile_flag
+#endif
+
 !=================================================================================================================
  subroutine rrtmg_swrad( &
                        p3d,p8w,pi3d,t3d,t8w,dz8w,qv3d,qc3d,qr3d,       &
@@ -10020,7 +10031,7 @@ CONTAINS
  liqflgsw = 1
 
 #ifdef _PAPI
- logFlag = 1
+ logFlag = 3
 #endif
 
 !--- latitude loop:
@@ -10052,6 +10063,8 @@ CONTAINS
           enddo
 
 #ifdef _PAPI
+          call compile_flag(logFlag)
+
           retval = PAPI_VER_CURRENT
           call PAPIf_library_init(retval)
           if( retval .ne. PAPI_VER_CURRENT ) then
@@ -10120,7 +10133,7 @@ CONTAINS
                stop
              endif
              
-             if(logFlag .eq. 1) then
+             if(logFlag .gt. 0) then
                countTemp1 = mod(count(1), huge(countTemp1))
                countTemp2 = count(1)/huge(countTemp1)
                call mpas_log_write(' ****** PAPI TOT CYC $i $i', intArgs=(/countTemp2, countTemp1/))
@@ -10132,9 +10145,11 @@ CONTAINS
                countTemp1 = mod(count(3), huge(countTemp1))
                countTemp2 = count(3)/huge(countTemp1)
                call mpas_log_write(' ****** PAPI LD INS $i $i', intArgs=(/countTemp2, countTemp1/))
+
+               call mpas_log_write('     ')
              endif
 
-             logFlag = 0
+             logFlag = logFlag - 1
 #endif
 
           !--- initialize the local arrays containing the different cloud water and ice condenstates:
